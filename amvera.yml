@@ -1,12 +1,9 @@
 meta:
   name: yooma
   env: node
-  toolchain:
-    name: node
-    version: "18"
+  toolchain: node
 build:
   command: npm install
 run:
   command: node server/index.js
-  persistence: false
   port: 3000
