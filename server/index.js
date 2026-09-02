@@ -218,4 +218,14 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => console.log('Yooma running on port ' + PORT));
+server.listen(PORT, '0.0.0.0', () => {
+  console.log('Yooma running on port ' + PORT);
+  console.log('Open http://0.0.0.0:' + PORT);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught:', err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled:', err);
+});
