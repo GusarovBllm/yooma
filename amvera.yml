@@ -1,8 +1,9 @@
 meta:
   name: yooma
   env: node
-  toolchain: node
-  version: "18"
+  toolchain:
+    name: node
+    version: "18"
 build:
   command: npm install
 run:
