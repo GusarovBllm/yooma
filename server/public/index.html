@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yooma</title>
+<meta name="description" content="Yooma — мессенджер">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<style>
+:root{--bg:#0d0d14;--bg2:#12121c;--card:#151524;--card2:#1a1a30;--border:#2a2a3a;--border2:#3b3b50;--title:#e8ecf4;--body:#b0b4cc;--body50:#7a7ea0;--muted:#54587a;--accent:#3d7bff;--accent2:#5b8def;--red:#ef4444;--green:#22c55e;--radius:12px;--header-h:56px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--body);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;min-height:100vh;overflow:hidden}
+input,button,textarea{font-family:inherit;outline:none}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ─── Auth ─── */
+.auth-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg)}
+.auth-card{width:400px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px}
+.auth-card h1{font-size:28px;font-weight:900;text-align:center;color:var(--title);margin-bottom:20px}
+.auth-card h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.auth-tabs{display:flex;gap:6px;margin-bottom:20px;justify-content:center}
+.auth-tab{padding:8px 22px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid var(--border);background:var(--bg);color:var(--body50);cursor:pointer}
+.auth-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--body);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fld input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--title);border-radius:8px;padding:11px 14px;font-size:14px;transition:border-color .2s}
+.fld input:focus{border-color:var(--accent)}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:800;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn:hover{filter:brightness(1.08)}
+.btn-full{width:100%}
+
+/* ─── Layout ─── */
+.app{display:none;height:100vh;display:grid;grid-template-columns:320px 1fr}
+@media(max-width:768px){.app{grid-template-columns:1fr}}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sidebar-header h2{font-size:18px;font-weight:900;color:var(--title)}
+.sidebar-header h2 span{color:var(--accent)}
+.sidebar-header .actions{display:flex;gap:6px}
+.sidebar-header .actions button{background:none;border:none;color:var(--body50);font-size:18px;cursor:pointer;padding:4px}
+.sidebar-header .actions button:hover{color:var(--title)}
+.search-bar{padding:10px 12px;border-bottom:1px solid var(--border)}
+.search-bar input{width:100%;background:var(--card);border:1px solid var(--border2);color:var(--title);border-radius:8px;padding:9px 12px;font-size:13px}
+.chat-list{flex:1;overflow-y:auto;padding:4px 8px}
+.chat-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .15s}
+.chat-item:hover,.chat-item.active{background:var(--card)}
+.chat-item .ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;flex:0 0 44px;overflow:hidden;background-size:cover;background-position:center}
+.chat-item .info{flex:1;min-width:0}
+.chat-item .info .name{font-size:14px;font-weight:700;color:var(--title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-item .info .last{font-size:12px;color:var(--body50);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.chat-item .info .online{font-size:10px;color:var(--green)}
+.chat-item .time{font-size:11px;color:var(--muted);white-space:nowrap}
+.chat-item .badge{background:var(--accent);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ─── Main chat ─── */
+.main{display:flex;flex-direction:column;background:var(--bg)}
+.chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--bg2)}
+.chat-header .back{display:none;background:none;border:none;color:var(--body50);font-size:20px;cursor:pointer}
+@media(max-width:768px){.chat-header .back{display:block}}
+.chat-header .ava{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex:0 0 38px;overflow:hidden;background-size:cover;background-position:center}
+.chat-header .info{flex:1}
+.chat-header .info .name{font-size:15px;font-weight:700;color:var(--title)}
+.chat-header .info .st{font-size:11px;color:var(--body50)}
+.chat-header .actions{display:flex;gap:6px}
+.chat-header .actions button{background:none;border:none;color:var(--body50);font-size:18px;cursor:pointer;padding:4px}
+.messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:4px}
+.msg{max-width:70%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5;word-wrap:break-word}
+.msg.own{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg.other{background:var(--card);border:1px solid var(--border);color:var(--body);align-self:flex-start;border-bottom-left-radius:4px}
+.msg .sender{font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:2px}
+.msg .time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
+.msg .file-link{display:block;color:var(--accent);text-decoration:underline;font-size:13px;margin-top:4px}
+.msg img{max-width:100%;border-radius:8px;margin-top:4px}
+.typing-indicator{font-size:12px;color:var(--body50);padding:4px 16px;font-style:italic}
+.input-area{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg2)}
+.input-area input{flex:1;background:var(--card);border:1px solid var(--border2);color:var(--title);border-radius:10px;padding:12px 14px;font-size:14px}
+.input-area input:focus{border-color:var(--accent)}
+.input-area button{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:10px;padding:0 16px;font-size:18px;cursor:pointer}
+.input-area .clip{background:none;border:none;color:var(--body50);font-size:20px;cursor:pointer;padding:0 6px}
+.input-area .clip:hover{color:var(--title)}
+
+/* ─── Modal ─── */
+.modal-ov{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-ov.open{display:flex}
+.modal{width:480px;max-width:100%;max-height:92vh;overflow:auto;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px}
+.modal h3{font-size:18px;font-weight:900;color:var(--title);margin-bottom:12px}
+.modal .close{float:right;background:none;border:none;color:var(--body50);font-size:20px;cursor:pointer}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .15s}
+.user-row:hover{background:var(--card)}
+.user-row .ava{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex:0 0 36px;overflow:hidden;background-size:cover}
+.user-row .name{font-size:14px;font-weight:700;color:var(--title)}
+.user-row .status{font-size:11px;color:var(--body50)}
+.modal .search-users{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--title);border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+#userList{max-height:300px;overflow-y:auto}
+</style>
+</head>
+<body>
+
+<div class="auth-wrap" id="authScreen">
+  <div class="auth-card">
+    <h1><span>Yooma</span></h1>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Вход</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+    </div>
+    <div id="authLogin">
+      <div class="fld"><label>Логин или почта</label><input id="loginId" placeholder="ivan или ivan@mail.ru"></div>
+      <div class="fld"><label>Пароль</label><input type="password" id="loginPwd" placeholder="••••••••"></div>
+      <button class="btn btn-full" onclick="login()">Войти</button>
+      <div id="loginMsg" style="margin-top:8px;font-size:13px;text-align:center;color:var(--red)"></div>
+    </div>
+    <div id="authRegister" style="display:none">
+      <div class="fld"><label>Логин</label><input id="regLogin"></div>
+      <div class="fld"><label>Email</label><input id="regEmail" placeholder="ivan@mail.ru"></div>
+      <div class="fld"><label>Пароль</label><input type="password" id="regPwd"></div>
+      <button class="btn btn-full" onclick="register()">Зарегистрироваться</button>
+      <div id="regMsg" style="margin-top:8px;font-size:13px;text-align:center;color:var(--red)"></div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2><span>Yooma</span></h2>
+      <div class="actions">
+        <button onclick="showContacts()" title="Контакты">👤</button>
+        <button onclick="showNewGroup()" title="Новая группа">➕</button>
+        <button onclick="showProfile()" title="Профиль">⚙️</button>
+      </div>
+    </div>
+    <div class="search-bar"><input id="chatSearch" placeholder="Поиск чатов…" oninput="renderChats()"></div>
+    <div class="chat-list" id="chatList"></div>
+  </div>
+  <div class="main" id="chatArea">
+    <div class="chat-header" id="chatHeader" style="display:none">
+      <button class="back" onclick="closeChat()">←</button>
+      <div class="ava" id="chatAva"></div>
+      <div class="info"><div class="name" id="chatName"></div><div class="st" id="chatStatus"></div></div>
+      <div class="actions">
+        <button onclick="showChatInfo()" title="Информация">ℹ️</button>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="typing-indicator" id="typingIndicator"></div>
+    <div class="input-area" id="chatInput" style="display:none">
+      <button class="clip" onclick="document.getElementById('fileInput').click()">📎</button>
+      <input type="file" id="fileInput" style="display:none" onchange="sendFile(this)">
+      <input id="msgInput" placeholder="Сообщение…" onkeydown="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()">➤</button>
+    </div>
+    <div id="noChat" style="display:flex;align-items:center;justify-content:center;flex:1;color:var(--muted);font-size:16px">Выберите чат</div>
+  </div>
+</div>
+
+<!-- Contacts Modal -->
+<div class="modal-ov" id="contactsModal">
+  <div class="modal">
+    <button class="close" onclick="closeModal('contactsModal')">✕</button>
+    <h3>Контакты</h3>
+    <input class="search-users" id="contactSearch" placeholder="Поиск пользователей…" oninput="searchUsers()">
+    <div id="userList"></div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let token = localStorage.getItem('yooma_token');
+let currentUser = null;
+let currentChat = null;
+let chats = [];
+let socket = null;
+const onlineUsers = new Set();
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// Auth
+function switchAuthTab(t){
+  document.querySelectorAll('.auth-tab').forEach(b=>b.classList.toggle('active',b.textContent.includes(t==='login'?'Вход':'Регистрация')));
+  $('authLogin').style.display=t==='login'?'block':'none';
+  $('authRegister').style.display=t==='register'?'block':'none';
+}
+
+async function api(path, method, body){
+  const opts = { method: method||'GET', headers: { 'Content-Type': 'application/json' } };
+  if(token) opts.headers['Authorization'] = 'Bearer '+token;
+  if(body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  return r.json();
+}
+
+async function register(){
+  const l=$('regLogin').value.trim(), e=$('regEmail').value.trim(), p=$('regPwd').value;
+  const res = await api('/api/auth/register','POST',{login:l,email:e,password:p});
+  if(res.token){ token=res.token; localStorage.setItem('yooma_token',token); currentUser=res.user; initApp(); }
+  else $('regMsg').textContent=res.error||'Ошибка';
+}
+async function login(){
+  const l=$('loginId').value.trim(), p=$('loginPwd').value;
+  const res = await api('/api/auth/login','POST',{login:l,password:p});
+  if(res.token){ token=res.token; localStorage.setItem('yooma_token',token); currentUser=res.user; initApp(); }
+  else $('loginMsg').textContent=res.error||'Ошибка';
+}
+function logout(){ token=null; localStorage.removeItem('yooma_token'); location.reload(); }
+
+function initApp(){
+  $('authScreen').style.display='none'; $('app').style.display='grid';
+  connectSocket(); loadChats();
+}
+
+function connectSocket(){
+  socket = io(API);
+  socket.on('connect', () => socket.emit('login', currentUser.id));
+  socket.on('message', (data) => { if(currentChat && data.chatId === currentChat._id) addMessage(data,false); loadChats(); });
+  socket.on('user-typing', (data) => { if(currentChat && data.chatId===currentChat._id) $('typingIndicator').textContent=data.user+' печатает…'; });
+  socket.on('user-online', (id) => { onlineUsers.add(id); updateChatStatus(); });
+  socket.on('user-offline', (id) => { onlineUsers.delete(id); updateChatStatus(); });
+}
+
+async function loadChats(){
+  chats = await api('/api/chats');
+  renderChats();
+}
+
+function renderChats(){
+  const q = ($('chatSearch').value||'').toLowerCase();
+  const list = $('chatList');
+  list.innerHTML = '';
+  chats.filter(c => {
+    const name = c.type==='group' ? c.name : c.members.find(m=>m._id!==currentUser.id)?.login||'';
+    return name.toLowerCase().includes(q);
+  }).forEach(c => {
+    const other = c.type==='private' ? c.members.find(m=>m._id!==currentUser.id) : null;
+    const name = c.type==='group' ? c.name : (other?.login||'Неизвестно');
+    const avaChar = (name||'?').charAt(0).toUpperCase();
+    const online = other && onlineUsers.has(other._id);
+    const last = c.lastMessage || '';
+    const time = c.lastMessageDate ? new Date(c.lastMessageDate).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) : '';
+    const active = currentChat && currentChat._id === c._id;
+    list.innerHTML += `
+      <div class="chat-item ${active?'active':''}" onclick="openChat('${c._id}')">
+        <div class="ava">${avaChar}</div>
+        <div class="info">
+          <div class="name">${esc(name)}</div>
+          <div class="last">${esc(last)}</div>
+          ${online?'<div class="online">● Онлайн</div>':''}
+        </div>
+        <div class="time">${time}</div>
+      </div>`;
+  });
+}
+
+async function openChat(chatId){
+  const chat = chats.find(c=>c._id===chatId);
+  if(!chat) return;
+  currentChat = chat;
+  const other = chat.type==='private' ? chat.members.find(m=>m._id!==currentUser.id) : null;
+  const name = chat.type==='group' ? chat.name : (other?.login||'');
+  $('chatAva').textContent = (name||'?').charAt(0).toUpperCase();
+  $('chatName').textContent = name;
+  $('chatHeader').style.display='flex'; $('chatInput').style.display='flex'; $('noChat').style.display='none';
+  if(other && onlineUsers.has(other._id)) $('chatStatus').textContent='Онлайн';
+  else $('chatStatus').textContent='Не в сети';
+  
+  const messages = await api('/api/messages/'+chatId);
+  const msgs = $('messages'); msgs.innerHTML='';
+  messages.forEach(m => addMessage(m, false));
+  msgs.scrollTop = msgs.scrollHeight;
+  socket.emit('join-chat', chatId);
+}
+
+function closeChat(){
+  if(currentChat) socket.emit('leave-chat', currentChat._id);
+  currentChat=null; $('chatHeader').style.display='none'; $('chatInput').style.display='none'; $('noChat').style.display='flex'; $('messages').innerHTML='';
+}
+
+function addMessage(msg, prepend){
+  const div = document.createElement('div');
+  const isOwn = msg.sender._id === currentUser.id;
+  div.className = 'msg ' + (isOwn?'own':'other');
+  const senderName = msg.sender.login||'Неизвестно';
+  const time = new Date(msg.createdAt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  let html = '';
+  if(!isOwn && currentChat?.type==='group') html += '<div class="sender">'+esc(senderName)+'</div>';
+  if(msg.text) html += esc(msg.text);
+  if(msg.file){
+    if(msg.file.match(/\.(png|jpg|jpeg|gif|webp)$/i)) html += '<br><img src="'+msg.file+'" alt="image">';
+    else html += '<br><a class="file-link" href="'+msg.file+'" target="_blank">'+esc(msg.fileName||'Файл')+'</a>';
+  }
+  html += '<div class="time">'+time+'</div>';
+  div.innerHTML = html;
+  if(prepend) $('messages').prepend(div);
+  else $('messages').appendChild(div);
+  $('messages').scrollTop = $('messages').scrollHeight;
+}
+
+async function sendMsg(){
+  const text = $('msgInput').value.trim();
+  if(!text || !currentChat) return;
+  $('msgInput').value='';
+  const msg = await api('/api/messages','POST',{chatId:currentChat._id,text});
+  if(msg._id){
+    socket.emit('new-message', {chatId:currentChat._id, ...msg});
+    addMessage(msg, false);
+    loadChats();
+  }
+}
+
+async function sendFile(inp){
+  if(!inp.files[0]||!currentChat) return;
+  const fd = new FormData();
+  fd.append('file', inp.files[0]);
+  const r = await fetch(API + '/api/upload', { method:'POST', headers:{'Authorization':'Bearer '+token}, body:fd });
+  const data = await r.json();
+  if(data.url){
+    const msg = await api('/api/messages','POST',{chatId:currentChat._id, file:data.url, fileName:data.name});
+    if(msg._id){ socket.emit('new-message', {chatId:currentChat._id, ...msg}); addMessage(msg, false); loadChats(); }
+  }
+  inp.value='';
+}
+
+let typingTimer;
+$('msgInput').addEventListener('input', () => {
+  if(!currentChat) return;
+  socket.emit('typing', {chatId:currentChat._id, user:currentUser.login});
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => $('typingIndicator').textContent='', 2000);
+});
+
+function updateChatStatus(){
+  if(currentChat){
+    const other = currentChat.members?.find(m=>m._id!==currentUser.id);
+    if(other && onlineUsers.has(other._id)) $('chatStatus').textContent='Онлайн';
+    else $('chatStatus').textContent='Не в сети';
+  }
+}
+
+// Contacts & Search
+async function searchUsers(){
+  const q = $('contactSearch').value.trim();
+  if(!q){ $('userList').innerHTML=''; return; }
+  const users = await api('/api/users/search?q='+q);
+  $('userList').innerHTML = users.filter(u=>u._id!==currentUser.id).map(u =>
+    `<div class="user-row" onclick="startChat('${u._id}')"><div class="ava">${u.login.charAt(0).toUpperCase()}</div><div><div class="name">${esc(u.login)}</div><div class="status">${u.status||'Не в сети'}</div></div></div>`
+  ).join('');
+}
+
+async function startChat(userId){
+  const chat = await api('/api/chats/private','POST',{userId});
+  closeModal('contactsModal');
+  await loadChats();
+  openChat(chat._id);
+}
+
+function showContacts(){ $('contactsModal').classList.add('open'); $('contactSearch').value=''; $('userList').innerHTML=''; }
+function showNewGroup(){ alert('Группы пока в разработке'); }
+function showProfile(){ alert('Профиль: смена аватара на серверной части в разработке'); }
+function showChatInfo(){ alert('Информация о чате в разработке'); }
+function closeModal(id){ $(id).classList.remove('open'); }
+
+// Init
+if(token){
+  // Validate token by trying to load chats
+  (async () => {
+    const test = await api('/api/chats');
+    if(test.error){ token=null; localStorage.removeItem('yooma_token'); return; }
+    currentUser = { id: test.length ? '' : '' }; // will get from /api/users/me later
+    initApp();
+  })();
+}
+</script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</body>
+</html>
