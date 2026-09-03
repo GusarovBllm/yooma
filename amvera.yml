@@ -3,7 +3,8 @@ meta:
   env: node
   toolchain: node
 build:
-  command: npm install --no-optional
+  command: npm install
 run:
   command: node server/index.js
   port: 3000
+  persistence: false
