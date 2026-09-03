@@ -3,9 +3,5 @@
   "version": "1.0.0",
   "main": "server/index.js",
   "scripts": { "start": "node server/index.js" },
-  "dependencies": {
-    "express": "^4.21.0",
-    "jsonwebtoken": "^9.0.2",
-    "socket.io": "^4.7.5"
-  }
+  "dependencies": {}
 }
